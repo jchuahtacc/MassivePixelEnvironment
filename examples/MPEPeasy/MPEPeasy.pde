@@ -11,20 +11,14 @@ Process process;
 // MPE Configuration object
 Configuration tileConfig;
 
-boolean stallion = false;
+boolean stallion = true;
 float rotX = 0.0;
 float rotY = 0.0;
 float rotZ = 0.0;
 float stallionScale = 1.0;
 
 void settings() {
-  if (stallion) {
-    // create a new configuration object and specify the path to the configuration file
-    tileConfig = new Configuration(dataPath("configuration.xml"), this);
-    
-    // set the size of the sketch based on the configuration file
-    size(tileConfig.getLWidth(), tileConfig.getLHeight(), OPENGL);
-  } else {
+  if (!stallion) {
     size(200, 200, P3D);
   }
 }
@@ -32,7 +26,7 @@ void settings() {
 void setup() {
   if (stallion) {
     // create a new configuration object and specify the path to the configuration file
-    tileConfig = new Configuration(dataPath("configuration.xml"), this);
+    tileConfig = new Configuration(dataPath("configuration_quad1.xml"), this);
     
     // set the size of the sketch based on the configuration file
     size(tileConfig.getLWidth(), tileConfig.getLHeight(), OPENGL);
@@ -41,13 +35,13 @@ void setup() {
   
   // disable camera placement by MPE, because it interferes with PeasyCam
     process.disableCameraReset();
-    stallionScale = 100.0;
+    stallionScale = 5.0;
   }
   
   // initialize the peasy cam
-  cam = new PeasyCam(this, 100);
-  cam.setMinimumDistance(50);
-  cam.setMaximumDistance(500);
+  cam = new PeasyCam(this, 3000);
+  cam.setMinimumDistance(0);
+  cam.setMaximumDistance(5000);
   
   if (stallion) {
     if(tileConfig.isLeader())
@@ -82,10 +76,10 @@ void draw() {
   rotateZ(-PI / 6.0);
 
   rotateX(-PI * rotX);
-  box(30);
-  translate(0, 0, 30);
+  box(200);
+  translate(0, 0, 200);
   noStroke();
-  sphere(10);
+  sphere(50);
   popMatrix();
   rotX = (rotX + 0.01) % 2.0;
   rotY = (rotY + 0.01) % 2.0;
@@ -96,6 +90,12 @@ void draw() {
 // when the master process receives a mouse event, broadcast the update camera state to the other processes
 void mouseDragged()
 {
+  if (stallion) {
+    process.broadcast(cam.getState());
+  }
+}
+
+void mouseWheel(MouseEvent e) {
   if (stallion) {
     process.broadcast(cam.getState());
   }
